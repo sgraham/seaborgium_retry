@@ -1,0 +1,32 @@
+Seaborgium
+----------
+
+- Dockable windows, source is main view
+- Text editor control for command line and variable editing inline
+- ESC focuses command line, interrupts current evaluations *always*. How?
+  Debug engine on bg thread, maybe bg process for always killability?
+- No chromium base requirement, use full C++11 for bind, thread, atomic. TBD,
+  messageloop equivalent
+- sxe ld
+- data r/w breakpoints
+- pending breakpoints for not loaded modules
+- auto child attach
+- conditional breakpoint with not too crazy syntax
+  - b <at> if $stack[1].module ~= 'dwrite'
+  - Python? Lua? something like that
+- editing locals/watch exprs does set "lval" "rval" with C++ evaluator for
+  both
+- dd/du/etc
+- stack view with extra raw information available
+- process + thread view
+- source view does source, or disasm, or mixed
+- chrome ipc step-in w/ F12: understand enough of routing to know which process
+  it's going to, set a BP there, run message send, and message receiver
+  process until it arrives.
+- usual F9, C-F9, F10, F11, S-F11, C-S-F10
+- control exception handling behavior
+- chrome trace settable
+- gui actions are always command line commands. views might not be.
+- indication of staleness for each view, update always
+  interruptable/refreshable manually
+- cross platform, SDL2 and lldb only dependencies
