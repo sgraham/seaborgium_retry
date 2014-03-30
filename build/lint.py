@@ -7,7 +7,7 @@ sys.path.append(lint_path)
 import cpplint
 import cpplint_chromium
 
-src_root = os.path.normpath(os.path.join(root, 'src/sg'))
+src_root = os.path.normpath(os.path.join(root, 'src'))
 os.chdir(src_root)
 # Add a fake .svn, otherwise it finds .git and wants header guards to be
 # SRC_SG_BLAH_H.
