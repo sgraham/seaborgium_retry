@@ -5,11 +5,18 @@
 #ifndef SG_CMDLINE_H_
 #define SG_CMDLINE_H_
 
+#include "sg/config.h"
+class DebugEngine;
+
 class Cmdline {
  public:
   Cmdline();
 
+  void Execute(const string& command);
+  void SetDebugEngine(DebugEngine* debug_engine);
+
  private:
+  DebugEngine* debug_engine_;
 };
 
 #endif  // SG_CMDLINE_H_

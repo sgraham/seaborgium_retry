@@ -14,6 +14,7 @@ os.chdir(src_root)
 fake_dot_svn = os.path.join(src_root, '.svn')
 open(fake_dot_svn, 'w').close()
 extra_check_functions = [cpplint_chromium.CheckPointerDeclarationWhitespace]
+cpplint.ParseArguments(['--filter=-build/include_what_you_use', 'dummy'])
 for root, dirs, files in os.walk(src_root):
   for file in files:
     ext = os.path.splitext(file)[1]
