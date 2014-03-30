@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,9 @@ import os
 import re
 import subprocess
 import sys
+
+
+SELF = os.path.abspath(__file__)
 
 
 def Run(args, cwd=None):
@@ -291,9 +294,9 @@ def Generate(is_debug):
 
     n.comment('Regenerate build file if build script changes.')
     n.rule('configure',
-           command=sys.executable + ' sng.py ' + '$configure_args',
+           command=sys.executable + ' ' + SELF + ' ' + '$configure_args',
            generator=1)
-    build_files = ['sng.py', 'third_party/ninja/misc/ninja_syntax.py'] + \
+    build_files = [SELF, 'third_party/ninja/misc/ninja_syntax.py'] + \
                   ALL_AUX_SNG
     n.build('build.ninja', 'configure', implicit=build_files)
     n.newline()
