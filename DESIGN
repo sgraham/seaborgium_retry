@@ -29,4 +29,4 @@ Seaborgium
 - gui actions are always command line commands. views might not be.
 - indication of staleness for each view, update always
   interruptable/refreshable manually
-- cross platform, SDL2 and lldb only dependencies
+- cross platform, SDL2, lldb, gtest only dependencies
