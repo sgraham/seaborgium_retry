@@ -1,3 +1,5 @@
 build.ninja
 out/
 *.pyc
+third_party/googletest
+third_party/ninja
