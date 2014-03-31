@@ -12,7 +12,7 @@ class Cmdline {
  public:
   Cmdline();
 
-  void Execute(const string& command);
+  bool Execute(const wstring& command, wstring* result, wstring* err);
   void SetDebugEngine(DebugEngine* debug_engine);
 
  private:

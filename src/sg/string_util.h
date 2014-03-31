@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SG_DEBUG_ENGINE_H_
-#define SG_DEBUG_ENGINE_H_
+#ifndef SG_STRING_UTIL_H_
+#define SG_STRING_UTIL_H_
 
 #include "sg/config.h"
 
-class DebugEngine {
- public:
-  virtual ~DebugEngine();
-  virtual wstring GetVersion() const = 0;
-};
+vector<wstring> StringSplit(const wstring& str, wchar_t break_at);
+wstring Format(const wchar_t* msg, ...);
 
-#endif  // SG_DEBUG_ENGINE_H_
+#endif  // SG_STRING_UTIL_H_
