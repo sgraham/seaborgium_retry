@@ -37,7 +37,6 @@ TEST_F(CmdlineTest, BasicTokenization) {
   EXPECT_TRUE(cmdline.Execute(L"ver", &result, &err));
   EXPECT_EQ(L"Mock 1.0", result);
   EXPECT_FALSE(cmdline.Execute(L"unknown_command", &result, &err));
-  EXPECT_EQ(L"Unrecognized command 'unknown_command'",
-            err);  // TODO(scottmg): substr test.
+  EXPECT_TRUE(err.find(L"Unrecognized command") != wstring::npos);
 }
 

@@ -276,7 +276,6 @@ def Generate(is_debug):
     all_test_objs = []
     all_test_libs = []
     for target in targets:
-      print target
       objs, libs = Compile(n, target, BuildLibTags(target, targets))
       no_test_objs = [x for x in objs if '_test' not in x and '-test' not in x]
       test_objs = [x for x in objs if '_test' in x or '-test' in x]

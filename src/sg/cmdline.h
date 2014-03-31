@@ -15,6 +15,8 @@ class Cmdline {
   bool Execute(const wstring& command, wstring* result, wstring* err);
   void SetDebugEngine(DebugEngine* debug_engine);
 
+  bool CmdVersion(const vector<wstring>& argv, wstring* result, wstring* err);
+
  private:
   DebugEngine* debug_engine_;
 };

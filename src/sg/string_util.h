@@ -10,7 +10,7 @@
 #define FMT_USE_INITIALIZER_LIST 1
 #define FMT_USE_VARIADIC_TEMPLATES 1
 #include "format/format.h"
-using namespace fmt;
+using fmt::Format;
 
 vector<wstring> StringSplit(const wstring& str, wchar_t break_at);
 

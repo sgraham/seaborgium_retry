@@ -9,7 +9,7 @@
 vector<wstring> StringSplit(const wstring& str, wchar_t break_at) {
   vector<wstring> result;
   wstring current;
-  for (auto const& i : str) {
+  for (const auto& i : str) {
     if (i == break_at) {
       result.push_back(current);
       current = wstring();
