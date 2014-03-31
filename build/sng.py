@@ -31,6 +31,16 @@ def GitPullOrClone(remote):
     Run(['git', 'pull'], cwd='third_party/%s' % base)
 
 
+def SvnCheckoutOrUp(remote, name, subdir=None):
+  cwd = 'third_party'
+  if subdir:
+    cwd = os.path.join(cwd, subdir)
+  if not os.path.exists('third_party/%s/.svn' % name):
+    Run(['svn', 'checkout', remote, name], cwd=cwd)
+  cwd = os.path.join(cwd, name)
+  Run(['svn', 'up'], cwd=cwd)
+
+
 def DEP_ninja(action):
   if action == 'sync':
     GitPullOrClone('https://github.com/martine/ninja.git')
@@ -46,12 +56,7 @@ def DEP_ninja(action):
 
 def DEP_googletest(action):
   if action == 'sync':
-    if not os.path.exists('third_party/googletest/.svn'):
-      Run(['svn', 'checkout',
-           'http://googletest.googlecode.com/svn/trunk/@HEAD', 'googletest'],
-          cwd='third_party')
-    else:
-      Run(['svn', 'up'], cwd='third_party/googletest')
+    SvnCheckoutOrUp('http://googletest.googlecode.com/svn/trunk/', 'googletest')
 
 
 CFLAGS = [
