@@ -34,7 +34,7 @@ bool Cmdline::Execute(const wstring& command, wstring* result, wstring* err) {
     if (parts[0] == command.name)
       return (this->*command.func)(parts, result, err);
   }
-  *err = Format(L"Unrecognized command '{}'", parts[0].c_str());
+  *err = Format(L"unrecognized command '{}'", parts[0].c_str());
   return false;
 }
 
@@ -46,7 +46,7 @@ bool Cmdline::CmdVersion(const vector<wstring>& argv,
                          wstring* result,
                          wstring* err) {
   if (argv.size() != 1) {
-    *err = L"Unexpected arguments to 'ver'";
+    *err = L"unexpected arguments to 'ver'";
     return false;
   }
   *result = debug_engine_->GetVersion();
