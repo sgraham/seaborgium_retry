@@ -7,7 +7,11 @@
 
 #include "sg/config.h"
 
+#define FMT_USE_INITIALIZER_LIST 1
+#define FMT_USE_VARIADIC_TEMPLATES 1
+#include "format/format.h"
+using namespace fmt;
+
 vector<wstring> StringSplit(const wstring& str, wchar_t break_at);
-wstring Format(const wchar_t* msg, ...);
 
 #endif  // SG_STRING_UTIL_H_

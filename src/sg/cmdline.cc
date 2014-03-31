@@ -21,7 +21,7 @@ bool Cmdline::Execute(const wstring& command, wstring* result, wstring* err) {
     *result = debug_engine_->GetVersion();
     return true;
   }
-  *err = Format(L"Unrecognized command '%s'", parts[0].c_str());
+  *err = Format(L"Unrecognized command '{}'", parts[0].c_str());
   return false;
 }
 
