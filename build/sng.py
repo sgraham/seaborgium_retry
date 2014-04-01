@@ -139,6 +139,7 @@ elif IS_LINUX:
     ]
   LDFLAGS = [
       '-lpthread',
+      '-ldl',
     ]
   LDFLAGS_DEBUG = [
     ]
@@ -301,7 +302,9 @@ def Generate(is_debug):
     n.newline()
 
     ldflags = LDFLAGS
+    libs = []
     GetFromDeps(ldflags, 'ldflags')
+    GetFromDeps(libs, 'libs')
     if is_debug:
       ldflags += LDFLAGS_DEBUG
       GetFromDeps(ldflags, 'ldflags_debug')
@@ -309,6 +312,7 @@ def Generate(is_debug):
       ldflags += LDFLAGS_RELEASE
       GetFromDeps(ldflags, 'ldflags_release')
     n.variable('ldflags', ldflags)
+    n.variable('libs', libs)
     n.newline()
 
     if IS_WIN:

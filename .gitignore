@@ -5,4 +5,5 @@ third_party/format
 third_party/googletest
 third_party/llvm
 third_party/ninja
+third_party/SDL
 *.swp
