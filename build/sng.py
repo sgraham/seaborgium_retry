@@ -18,9 +18,22 @@ SELF = os.path.abspath(__file__)
 BASEDIR = os.path.dirname(SELF)
 
 
+IS_WIN = sys.platform.startswith('win32')
+IS_LINUX = sys.platform.startswith('linux')
+
+
+if IS_WIN:
+  obj_ext = '.obj'
+  exe_ext = '.exe'
+elif IS_LINUX:
+  obj_ext = '.o'
+  exe_ext = ''
+
+
 def Run(args, cwd=None):
   assert isinstance(args, list)
-  subprocess.check_call(args, shell=True, cwd=cwd)
+  print args, 'in', cwd
+  subprocess.check_call(args, shell=IS_WIN, cwd=cwd)
 
 
 def GitPullOrClone(remote):
@@ -41,6 +54,14 @@ def SvnCheckoutOrUp(remote, name, subdir=None):
   Run(['svn', 'up'], cwd=cwd)
 
 
+def HgCloneOrUpdate(remote):
+  base = os.path.splitext(os.path.basename(remote))[0]
+  if not os.path.exists('third_party/%s/.hg' % base):
+    Run(['hg', 'clone', remote], cwd='third_party')
+  else:
+    Run(['hg', 'update'], cwd='third_party/%s' % base)
+
+
 def DEP_ninja(action):
   if action == 'sync':
     GitPullOrClone('https://github.com/martine/ninja.git')
@@ -59,42 +80,70 @@ def DEP_googletest(action):
     SvnCheckoutOrUp('http://googletest.googlecode.com/svn/trunk/', 'googletest')
 
 
-CFLAGS = [
-    '/Zi', '/W4', '/WX', '/GR-',
-    '/wd4100',
-    '/wd4530',
-    '/wd4800',
-    '/D_WIN32_WINNT=0x0501',
-    '/D_CRT_SECURE_NO_WARNINGS',
-    '/DNOMINMAX',
-    '/Isrc',
-    '/Ithird_party',
-  ]
-CFLAGS_DEBUG = [
-    '/D_DEBUG',
-    '/MDd',
-  ]
-CFLAGS_RELEASE = [
-    '/Ox',
-    '/GL',
-    '/DNDEBUG',
-    '/MD',
-  ]
-ARFLAGS = [
-  ]
-ARFLAGS_DEBUG = [
-  ]
-ARFLAGS_RELEASE = [
-    '/LTCG',
-  ]
-LDFLAGS = [
-    '/DEBUG',
-  ]
-LDFLAGS_DEBUG = [
-  ]
-LDFLAGS_RELEASE = [
-    '/LTCG',
-  ]
+if IS_WIN:
+  CFLAGS = [
+      '/Zi', '/W4', '/WX', '/GR-',
+      '/wd4100',
+      '/wd4530',
+      '/wd4800',
+      '/D_WIN32_WINNT=0x0501',
+      '/D_CRT_SECURE_NO_WARNINGS',
+      '/DNOMINMAX',
+      '/Isrc',
+      '/Ithird_party',
+    ]
+  CFLAGS_DEBUG = [
+      '/D_DEBUG',
+      '/MDd',
+    ]
+  CFLAGS_RELEASE = [
+      '/Ox',
+      '/GL',
+      '/DNDEBUG',
+      '/MD',
+    ]
+  ARFLAGS = [
+    ]
+  ARFLAGS_DEBUG = [
+    ]
+  ARFLAGS_RELEASE = [
+      '/LTCG',
+    ]
+  LDFLAGS = [
+      '/DEBUG',
+    ]
+  LDFLAGS_DEBUG = [
+    ]
+  LDFLAGS_RELEASE = [
+      '/LTCG',
+    ]
+elif IS_LINUX:
+  CFLAGS = [
+      '-g', '-Wall', '-Werror',
+      '-std=c++0x',
+      '-Isrc',
+      '-Ithird_party',
+    ]
+  CFLAGS_DEBUG = [
+      '-D_DEBUG',
+    ]
+  CFLAGS_RELEASE = [
+      '-O2',
+      '-DNDEBUG',
+    ]
+  ARFLAGS = [
+    ]
+  ARFLAGS_DEBUG = [
+    ]
+  ARFLAGS_RELEASE = [
+    ]
+  LDFLAGS = [
+      '-lpthread',
+    ]
+  LDFLAGS_DEBUG = [
+    ]
+  LDFLAGS_RELEASE = [
+    ]
 
 
 ALL_AUX_SNG = glob.glob(os.path.join(BASEDIR, 'sng_*.py'))
@@ -143,9 +192,11 @@ def Compile(n, target, libtags):
   objs = []
   libs = set()
   if isinstance(target, tuple):
+    name = target[0]
     root_path = target[1]
     strip_len = 0
   else:
+    name = target
     root_path = os.path.join('src', target)
     strip_len = 4
   for topdir, dirnames, filenames in os.walk(root_path):
@@ -155,13 +206,19 @@ def Compile(n, target, libtags):
       if ext in ('.cc', '.cpp', '.cxx'):
         ScanForIncludeAndUpdateLibs(src_path, libs, libtags)
         obj_path = '$builddir/' + ForwardSlash(
-            src_path[strip_len:] + '.obj').replace('/', '.')
-        variables = None
+            src_path[strip_len:] + obj_ext).replace('/', '.')
+        cflags = ''
         if '_test' in filename or '-test' in filename:
-          variables = (('cflags', '$cflags_test'),)
-        n.build(obj_path, 'cxx', src_path, variables=variables)
+          cflags = '$cflags_test'
+        dep = globals().get('DEP_' + name)
+        if dep:
+          result = dep('local_cflags')
+          if result:
+            cflags = cflags + ' ' + ' '.join(result)
+        n.build(obj_path, 'cxx', src_path,
+                variables=(('cflags', cflags),) if cflags else None)
         objs.append(obj_path)
-      elif ext == '.rc':
+      elif ext == '.rc' and IS_WIN:
         obj_path = '$builddir/' + ForwardSlash(
             src_path[strip_len:] + '.res').replace('/', '.')
         used = ScanForRCDATA(src_path)
@@ -176,7 +233,7 @@ def BinaryAndRuleForTarget(target):
   if target.endswith('_dll'):
     return '$builddir/' + target[:-4] + '.dll', 'linkdll'
   elif target.endswith('_exe'):
-    return '$builddir/' + target[:-4] + '.exe', 'link'
+    return '$builddir/' + target[:-4] + exe_ext, 'link'
   else:
     return '$builddir/' + target + '.lib', 'lib'
 
@@ -209,7 +266,6 @@ def Generate(is_debug):
     n.comment('The arguments passed to configure.py, for rerunning it.')
     n.variable('configure_args', ' '.join(sys.argv[1:]))
 
-    assert sys.platform == 'win32'
     n.variable('builddir', 'out')
 
     cflags = CFLAGS
@@ -255,24 +311,39 @@ def Generate(is_debug):
     n.variable('ldflags', ldflags)
     n.newline()
 
-    n.rule('cxx',
-           command=('cl /nologo /showIncludes $cflags -c $in '
-                    '/Fo$out /Fd$out.pdb'),
-           description='CXX $out',
-           deps='msvc')
-    n.rule('lib',
-           command='lib /nologo $arflags /out:$out $in',
-           description='LIB $out')
-    n.rule('link',
-           command='link /nologo $in $libs $ldflags /out:$out /pdb:$out.pdb',
-           description='LINK $out')
-    n.rule('linkdll',
-           command=('link /nologo $in $libs $ldflags /DLL '
-                    '/out:$out /pdb:$out.pdb'),
-           description='LINK DLL $out')
-    n.rule('rc',
-           command='rc /nologo /r /fo$out $rcflags $in',
-           description='RC $out')
+    if IS_WIN:
+      n.rule('cxx',
+            command=('cl /nologo /showIncludes $cflags -c $in '
+                      '/Fo$out /Fd$out.pdb'),
+            description='CXX $out',
+            deps='msvc')
+      n.rule('lib',
+            command='lib /nologo $arflags /out:$out $in',
+            description='LIB $out')
+      n.rule('link',
+            command='link /nologo $in $libs $ldflags /out:$out /pdb:$out.pdb',
+            description='LINK $out')
+      n.rule('linkdll',
+            command=('link /nologo $in $libs $ldflags /DLL '
+                      '/out:$out /pdb:$out.pdb'),
+            description='LINK DLL $out')
+      n.rule('rc',
+            command='rc /nologo /r /fo$out $rcflags $in',
+            description='RC $out')
+    elif IS_LINUX:
+      cxx = os.environ.get('CXX', 'g++')
+      ar = os.environ.get('AR', 'ar')
+      n.rule('cxx',
+            command=(cxx + ' $cflags -c $in -o$out'),
+            description='CXX $out')
+      n.rule('lib',
+             command='rm -f $out && ' + ar + ' rcs $out $in',
+             description='LIB $out')
+      n.rule('link',
+             command=(cxx + ' $ldflags -o $out '
+                      '-Wl,--start-group $in $solibs -Wl,--end-group $libs'),
+             description='LINK $out')
+
     n.newline()
 
     targets = [os.path.basename(x) for x in glob.glob('src/*')]
@@ -292,16 +363,19 @@ def Generate(is_debug):
       all_binaries.append(name)
 
     if all_test_objs:
-      gtest_obj = '$builddir/gtest-all.obj'
-      gtest_main = '$builddir/gtest_main.obj'
-      gtest_cflags = '$cflags_test /wd4100 /Ithird_party/googletest'
+      gtest_obj = '$builddir/gtest-all' + obj_ext
+      gtest_main = '$builddir/gtest_main' + obj_ext
+      extra_flags = ''
+      if IS_WIN:
+        extra_flags = ' /wd4100'
+      gtest_cflags = '$cflags_test' + extra_flags +  ' -Ithird_party/googletest'
       n.build(gtest_obj, 'cxx',
               'third_party/googletest/src/gtest-all.cc',
               variables=(('cflags', gtest_cflags),))
       n.build(gtest_main, 'cxx',
               'third_party/googletest/src/gtest_main.cc',
               variables=(('cflags', gtest_cflags),))
-      test_binary = '$builddir/tests.exe'
+      test_binary = '$builddir/tests' + exe_ext
       n.build(test_binary, 'link',
               all_test_objs + [gtest_obj, gtest_main] + all_test_libs)
       all_binaries.append(test_binary)

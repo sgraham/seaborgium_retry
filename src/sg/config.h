@@ -11,6 +11,8 @@ using namespace std;  // NOLINT(build/namespaces)
 
 #if defined(_MSC_VER)
 #define OS_WIN 1
+#elif defined(__linux__)
+#define OS_LINUX 1
 #else
 #error TODO
 #endif

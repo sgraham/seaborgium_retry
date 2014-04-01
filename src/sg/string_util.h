@@ -7,8 +7,6 @@
 
 #include "sg/config.h"
 
-#define FMT_USE_INITIALIZER_LIST 1
-#define FMT_USE_VARIADIC_TEMPLATES 1
 #include "format/format.h"
 using fmt::Format;
 

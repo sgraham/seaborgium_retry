@@ -10,7 +10,7 @@
 namespace {
 
 struct Commands {
-  wchar_t* name;
+  const wchar_t* name;
   bool (Cmdline::*func)(const vector<wstring>& argv,
                         wstring* result,
                         wstring* err);
